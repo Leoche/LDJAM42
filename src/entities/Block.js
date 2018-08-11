@@ -8,6 +8,10 @@ export class Block extends Phaser.GameObjects.Sprite {
         this.setOrigin(0,0)
         this.setFrame(40)
         this.setPosition(mapX * 32, mapY * 32)
+        this.color = "brown"
+        this.catchable = true;
+        this.sliding = null;
+        this.depth = 500;
         this.map = {
           x: mapX,
           y: mapY

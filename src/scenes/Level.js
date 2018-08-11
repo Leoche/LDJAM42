@@ -1,6 +1,9 @@
 import { Player } from '../entities/Player';
 import { Block } from '../entities/Block';
+import { BlockIce } from '../entities/BlockIce';
+import { Door } from '../entities/Door';
 import { Exit } from '../entities/Exit';
+import { Button } from '../entities/Button';
 export class Level extends Phaser.Scene {
   constructor () {
       super('Menu')
@@ -18,8 +21,10 @@ export class Level extends Phaser.Scene {
     this.map = this.make.tilemap({ key: 'map' })
     var tiles = this.map.addTilesetImage('sprite@2x', 'tiles')
     var layerBackground = this.map.createStaticLayer(0, tiles, 0, 0)
-    //var layerBlocks = this.map.createStaticLayer(3, tiles, 0, 0)
+    // var layerBlocks = this.map.createStaticLayer(3, tiles, 0, 0)
     this.blocks = []
+    this.doors = []
+    this.buttons = []
     this.exit = null
     this.initPlayer()
     this.initBlocks()
@@ -35,16 +40,32 @@ export class Level extends Phaser.Scene {
       }
     }
     this.cameras.main.startFollow(this.player)
-    this.cameras.main.setZoom(500)
-    this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
+    this.cameras.main.setZoom(1.5)
+    // this.cameras.main.setZoom(500)
+    // this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
   }
   initBlocks() {
     var playerLayer = this.map.layers.filter(layer => layer.name === "blocks")[0].data
     for (var i = 0; i < playerLayer.length; i++) {
       for (var j = 0; j < playerLayer[i].length; j++) {
         if (playerLayer[i][j].index !== -1) {
-          if (playerLayer[i][j].index === 95) this.exit = this.add.existing(new Exit(this, j, i))
-          else this.blocks.push(this.add.existing(new Block(this, j, i)))
+
+          if (playerLayer[i][j].index === 95) {
+            this.exit = this.add.existing(new Exit(this, j, i))
+          } else if (playerLayer[i][j].index === 41) {
+            this.blocks.push(this.add.existing(new Block(this, j, i)))
+          } else if (playerLayer[i][j].index === 63) {
+            this.blocks.push(this.add.existing(new BlockIce(this, j, i)))
+          } else if (playerLayer[i][j].index === 57) {
+            this.doors.push(this.add.existing(new Door(this, j, i, 'brown')))
+          } else if (playerLayer[i][j].index === 87) {
+            this.doors.push(this.add.existing(new Door(this, j, i, 'blue')))
+          } else if (playerLayer[i][j].index === 67) {
+            this.buttons.push(this.add.existing(new Button(this, j, i, 'brown')))
+          } else if (playerLayer[i][j].index === 78) {
+            this.buttons.push(this.add.existing(new Button(this, j, i, 'blue')))
+          }
+
         }
       }
     }
@@ -109,11 +130,29 @@ export class Level extends Phaser.Scene {
         returnblock = block
       }
     })
-    console.log(returnblock );
+    this.doors.forEach(door => {
+      if (door.map.x === mapX && door.map.y === mapY && !door.open) {
+        returnblock = door
+      }
+    })
     return returnblock;
   }
   canMove(entity, direction) {
     return this.canMoveCollider(entity, direction) && this.canMoveBlocks(entity, direction)
+  }
+  getOppositeDirection(direction) {
+    if (direction === "left") {
+      return "right";
+    } else if (direction === "right") {
+      return "left";
+    } else if (direction === "down") {
+      return "up";
+    } else if (direction === "up") {
+      return "down";
+    }
+  }
+  checkCollision(entityA, entityB) {
+    return entityA.map.x === entityB.map.x && entityA.map.y === entityB.map.y
   }
   update(){
     let direction = null
@@ -127,20 +166,70 @@ export class Level extends Phaser.Scene {
       direction = 'down'
     }
     if (direction !== null) {
-      this.player.move(direction, this.canMove(this.player, direction))
       if (this.player.catching) {
-        if (this.canMoveCollider(this.player.catched, direction)) {
-          this.player.catched.move(direction, true)
+        let neighboor = this.getNeighboorBlocks(this.player, this.player.getDirection());
+        if (neighboor.name === "blockice" && this.player.getDirection() === direction) {
+          this.player.release()
+          neighboor.slide(direction)
+        } else if (neighboor.name === "block"){
+            if ((this.canMove(this.player, direction) || this.player.getDirection() === direction)
+                && this.canMoveCollider(this.player.catched, direction)
+                && this.canMoveBlocks(this.player.catched, direction)
+                && (this.player.getDirection() === direction || this.player.getDirection() === this.getOppositeDirection(direction))
+              ) {
+              this.player.catched.move(direction, true)
+              this.player.move(direction, true)
+            }
         }
+      } else {
+        this.player.move(direction, this.canMove(this.player, direction))
       }
     }
-    if (this.keys.space.isDown && this.getNeighboorBlocks(this.player, this.player.getDirection()) !== null) {
+    if (this.keys.space.isDown && this.getNeighboorBlocks(this.player, this.player.getDirection()) !== null && this.getNeighboorBlocks(this.player, this.player.getDirection()).catchable) {
      this.player.catch(this.getNeighboorBlocks(this.player, this.player.getDirection()))
     } else {
      this.player.release()
     }
-    this.blocks.forEach(block => block.update())
+    this.blocks.forEach(block => {
+      block.update();
+      if (block.sliding !== null && this.canMoveCollider(block, block.sliding) && this.canMoveBlocks(block, block.sliding)) {
+        block.move(block.sliding, true)
+      } else {
+        block.sliding = null;
+        block.catchable = true;
+      }
+    })
     this.player.update()
     this.exit.update()
+
+    //Buttons/doors
+    this.doors.forEach(door => {
+      let open = true;
+      let forceClosed = false;
+      this.buttons.forEach(button => {
+        if (door.color === button.color) {
+          if (!this.checkCollision(this.player, button)) {
+            let on = false;
+            this.blocks.forEach(block => {
+              if (button.color === block.color) {
+                if (this.checkCollision(block, button)){
+                  on = true;
+                }
+              }
+            })
+            if (!on) open = false
+          }
+        }
+        // if (!open) {
+        //   this.blocks.forEach(block => {
+        //     if (this.checkCollision(block, button)) {
+        //       if (button.color === block.color && door.color === button.color) open = true;
+        //     }
+        //   })
+        // }
+      })
+      door.setOpen(open)
+    })
+    this.doors.forEach(door => door.update())
   }
 }
