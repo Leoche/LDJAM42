@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="left-up" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextobjectid="1">
+ <tileset firstgid="1" name="sprite@2x" tilewidth="32" tileheight="32" tilecount="100" columns="10">
+  <image source="../sprite@2x.png" width="320" height="320"/>
+ </tileset>
+ <layer name="background" width="8" height="8">
+  <data encoding="csv">
+71,72,72,72,72,72,72,73,
+81,82,82,82,82,82,82,83,
+81,82,82,82,82,82,82,83,
+81,82,82,82,82,82,82,83,
+81,82,82,82,82,82,82,83,
+81,82,82,82,82,82,82,83,
+81,82,82,82,82,82,82,83,
+91,92,92,92,92,92,92,93
+</data>
+ </layer>
+ <layer name="colliders" width="8" height="8" opacity="0.65">
+  <data encoding="csv">
+1,1,1,1,1,1,1,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1
+</data>
+ </layer>
+ <layer name="player" width="8" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,21,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="blocks" width="8" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,41,0,
+0,0,0,0,0,0,0,0,
+0,0,0,41,0,0,0,0,
+0,0,41,0,0,41,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>
