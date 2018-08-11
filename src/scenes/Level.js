@@ -17,7 +17,7 @@ export class Level extends Phaser.Scene {
   }
 
   create() {
-    window.e = this
+    this.gamepad = null;
     this.map = this.make.tilemap({ key: 'map' })
     var tiles = this.map.addTilesetImage('sprite@2x', 'tiles')
     var layerBackground = this.map.createStaticLayer(0, tiles, 0, 0)
@@ -29,6 +29,9 @@ export class Level extends Phaser.Scene {
     this.initPlayer()
     this.initBlocks()
     this.initControls()
+    this.input.gamepad.once('down', (pad, button, index) => {
+      this.initControlsGamepad(pad, button, index)
+    })
   }
   initPlayer() {
     var playerLayer = this.map.layers.filter(layer => layer.name === "player")[0].data
@@ -78,6 +81,10 @@ export class Level extends Phaser.Scene {
       down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
       space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     }
+  }
+  initControlsGamepad(gamepad, button, index) {
+    this.gamepad = gamepad;
+    console.log(gamepad);
   }
   canMoveCollider(entity, direction){
     if (entity.name === "player" && entity.moving) return false;
@@ -156,13 +163,13 @@ export class Level extends Phaser.Scene {
   }
   update(){
     let direction = null
-    if (this.keys.left.isDown) {
+    if (this.keys.left.isDown || (this.gamepad && (this.gamepad.left || this.gamepad.axes[0].getValue() < -0.5))) {
       direction = 'left'
-    } else if (this.keys.right.isDown) {
+    } else if (this.keys.right.isDown || (this.gamepad && (this.gamepad.right || this.gamepad.axes[0].getValue() > 0.5))) {
       direction = 'right'
-    } else if (this.keys.up.isDown) {
+    } else if (this.keys.up.isDown || (this.gamepad && (this.gamepad.up || this.gamepad.axes[1].getValue() < -0.5))) {
       direction = 'up'
-    } else if (this.keys.down.isDown) {
+    } else if (this.keys.down.isDown || (this.gamepad && (this.gamepad.down || this.gamepad.axes[1].getValue() > 0.5))) {
       direction = 'down'
     }
     if (direction !== null) {
@@ -185,7 +192,7 @@ export class Level extends Phaser.Scene {
         this.player.move(direction, this.canMove(this.player, direction))
       }
     }
-    if (this.keys.space.isDown && this.getNeighboorBlocks(this.player, this.player.getDirection()) !== null && this.getNeighboorBlocks(this.player, this.player.getDirection()).catchable) {
+    if ((this.keys.space.isDown || (this.gamepad && this.gamepad.A)) && this.getNeighboorBlocks(this.player, this.player.getDirection()) !== null && this.getNeighboorBlocks(this.player, this.player.getDirection()).catchable) {
      this.player.catch(this.getNeighboorBlocks(this.player, this.player.getDirection()))
     } else {
      this.player.release()

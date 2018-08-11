@@ -8,6 +8,9 @@ const gameConfig = {
   width: 600,
   height: 600,
   scene: Level,
+  input: {
+      gamepad: true
+  },
   pixelArt: true
 };
 
