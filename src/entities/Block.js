@@ -1,16 +1,13 @@
-export class Player extends Phaser.GameObjects.Sprite {
+export class Block extends Phaser.GameObjects.Sprite {
 
     constructor (scene, mapX, mapY)
     {
         super(scene, mapX * 32, mapY * 32)
-        this.name = "player"
+        this.name = "block"
         this.setTexture('player')
         this.setOrigin(0,0)
+        this.setFrame(40)
         this.setPosition(mapX * 32, mapY * 32)
-        this.frameBase = 0;
-        this.catching = 0;
-        this.catched = null;
-        this.depth = 1000;
         this.map = {
           x: mapX,
           y: mapY
@@ -19,18 +16,11 @@ export class Player extends Phaser.GameObjects.Sprite {
           x: mapX * 32,
           y: mapY * 32
         }
-        this.directionToFrame = {
-          left: 10,
-          right: 0,
-          up: 30,
-          down: 20
-        }
         this.moving = false
     }
-    move(direction, canMove){
+    move(direction){
+      console.log(direction);
       if (this.moving) return;
-      if (this.catching === 0) this.frameBase = this.directionToFrame[direction]
-      if (!canMove) return;
       this.moving = true;
       if (direction === "left") {
         this.nextPosition.x -= 32;
@@ -46,22 +36,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.map.y--
       }
     }
-    catch(block) {
-      this.catching = 1
-      this.catched = block;
-    }
-    release() {
-      this.catching = 0
-      this.catched = null;
-    }
-    getDirection() {
-      if (this.frameBase >= 30) return 'up';
-      if (this.frameBase >= 20) return 'down';
-      if (this.frameBase >= 10) return 'left';
-      if (this.frameBase >= 0) return 'right';
-    }
     update() {
-      this.setFrame(this.frameBase + this.catching)
       if (this.nextPosition.x !== this.x) {
         if (this.nextPosition.x > this.x) this.x += 2;
         else this.x -= 2;
