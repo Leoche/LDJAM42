@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="left-down" width="64" height="64" tilewidth="32" tileheight="32" infinite="0" nextobjectid="1">
+ <properties>
+  <property name="nextLevel" value="tutorial"/>
+ </properties>
  <tileset firstgid="1" name="sprite@2x" tilewidth="32" tileheight="32" tilecount="100" columns="10">
   <image source="../sprite@2x.png" width="320" height="320"/>
  </tileset>

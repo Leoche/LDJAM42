@@ -6,21 +6,26 @@ import { Exit } from '../entities/Exit';
 import { Button } from '../entities/Button';
 export class Level extends Phaser.Scene {
   constructor () {
-      super('Menu')
+      super({key: "level"})
+  }
+  init(data) {
+    this.level = data.level;
   }
   preload() {
     this.load.image('cokecan', 'assets/cokecan.png')
-    this.load.tilemapTiledJSON('map', 'assets/tutorial.json')
+    this.load.tilemapTiledJSON(this.level, 'assets/' + this.level + '.json')
     this.load.image('tiles', 'assets/sprite@2x.png')
     this.load.spritesheet('player', 'assets/sprite@2x.png', { frameWidth: 32, frameHeight: 32})
-
   }
 
   create() {
     this.gamepad = null;
-    this.map = this.make.tilemap({ key: 'map' })
+    if (this.input.gamepad.gamepads.length != 0)
+    this.gamepad = this.input.gamepad.gamepads[0];
+    this.map = this.make.tilemap({ key: this.level })
     var tiles = this.map.addTilesetImage('sprite@2x', 'tiles')
     var layerBackground = this.map.createStaticLayer(0, tiles, 0, 0)
+    this.nextLevel = this.map.layers[0].properties.nextLevel;
     var layerRoof = this.map.createStaticLayer(4, tiles, 0, 0)
     layerRoof.depth = 99999;
     // var layerBlocks = this.map.createStaticLayer(3, tiles, 0, 0)
@@ -28,31 +33,37 @@ export class Level extends Phaser.Scene {
     this.doors = []
     this.buttons = []
     this.winTime = 0;
+    this.restarting = false;
     this.exit = null
+    if (!this.anims.anims.entries.right)
     this.anims.create({
         key: 'right',
         frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
         frameRate: 15,
         repeat: 1
     });
+    if (!this.anims.anims.entries.left)
     this.anims.create({
         key: 'left',
         frames: this.anims.generateFrameNumbers('player', { start: 10, end: 13 }),
         frameRate: 15,
         repeat: 1
     });
+    if (!this.anims.anims.entries.down)
     this.anims.create({
         key: 'down',
         frames: this.anims.generateFrameNumbers('player', { start: 20, end: 23 }),
         frameRate: 15,
         repeat: 1
     });
+    if (!this.anims.anims.entries.up)
     this.anims.create({
         key: 'up',
         frames: this.anims.generateFrameNumbers('player', { start: 30, end: 33 }),
         frameRate: 15,
         repeat: 1
     });
+    if (!this.anims.anims.entries.win)
     this.anims.create({
         key: 'win',
         frames: this.anims.generateFrameNumbers('player', { start: 37, end: 39 }),
@@ -75,9 +86,14 @@ export class Level extends Phaser.Scene {
         }
       }
     }
-    this.cameras.main.startFollow(this.player)
-    this.cameras.main.setZoom(500)
-    this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
+    this.cameras.main.startFollow(this.player, false, 1, 1, -16, -16)
+    this.cameras.main.setZoom(5)
+    this.cameras.main.fadeIn(1000, 0, 0, 0, (camera, progress) => {
+      if (progress > .75) {
+        this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
+      }
+    })
+
   }
   initBlocks() {
     var playerLayer = this.map.layers.filter(layer => layer.name === "blocks")[0].data
@@ -113,12 +129,19 @@ export class Level extends Phaser.Scene {
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
       up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
       down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
+      restart: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R),
       space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     }
   }
   initControlsGamepad(gamepad, button, index) {
     this.gamepad = gamepad;
-    console.log(gamepad);
+  }
+  restart() {
+    this.cameras.main.fadeOut(500, 0, 0, 0, (camera, progress) => {
+      if (progress === 1) {
+        this.scene.restart();
+      }
+    })
   }
   canMoveCollider(entity, direction){
     if (entity.name === "player" && entity.moving) return false;
@@ -196,6 +219,10 @@ export class Level extends Phaser.Scene {
     return entityA.map.x === entityB.map.x && entityA.map.y === entityB.map.y
   }
   update(){
+    if ((this.keys.restart.isDown || (this.gamepad && this.gamepad.Y) )&& !this.restarting ) {
+      this.restarting = true;
+      this.restart();
+    }
     let direction = null
     if (this.keys.left.isDown || (this.gamepad && (this.gamepad.left || this.gamepad.axes[0].getValue() < -0.5))) {
       direction = 'left'
@@ -261,26 +288,22 @@ export class Level extends Phaser.Scene {
             if (!on) open = false
           }
         }
-        // if (!open) {
-        //   this.blocks.forEach(block => {
-        //     if (this.checkCollision(block, button)) {
-        //       if (button.color === block.color && door.color === button.color) open = true;
-        //     }
-        //   })
-        // }
       })
       door.setOpen(open)
     })
     this.doors.forEach(door => door.update())
-    if (this.checkCollision(this.player, this.exit)) {
+    if (this.checkCollision(this.player, this.exit) && !this.player.willWinning) {
       this.player.willWinning = true;
       this.cameras.main.zoomTo(5, 2000, 'Quint.easeOut')
     }
     if (this.player.isWinning) {
       if (this.winTime === 100) {
         this.winTime++
-        console.log('test');
-        this.cameras.main.fadeOut(2000, 0)
+        this.cameras.main.fadeOut(2000, 0, 0, 0, (camera, progress) => {
+          if (progress === 1) {
+            this.scene.start("level", {level: this.nextLevel})
+          }
+        })
       } else this.winTime++;
     }
   }

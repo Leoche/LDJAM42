@@ -6,6 +6,14 @@
          "height":10,
          "name":"background",
          "opacity":1,
+         "properties":
+            {
+             "nextLevel":"level1"
+            },
+         "propertytypes":
+            {
+             "nextLevel":"string"
+            },
          "type":"tilelayer",
          "visible":true,
          "width":31,
@@ -56,7 +64,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":1,
+ "nextobjectid":2,
  "orientation":"orthogonal",
  "renderorder":"left-up",
  "tiledversion":"1.1.6",

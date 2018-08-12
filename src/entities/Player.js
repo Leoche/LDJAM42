@@ -82,7 +82,7 @@ export class Player extends Phaser.GameObjects.Sprite {
       } else {
         this.moving = false;
         if (this.willWinning) this.isWinning = true;
-        this.anims.play('win')
+        if (this.isWinning) this.anims.play('win')
       }
     }
 }

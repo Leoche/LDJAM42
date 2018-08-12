@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="left-up" width="31" height="10" tilewidth="32" tileheight="32" infinite="0" nextobjectid="1">
+<map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="left-up" width="31" height="10" tilewidth="32" tileheight="32" infinite="0" nextobjectid="2">
  <tileset firstgid="1" name="sprite@2x" tilewidth="32" tileheight="32" tilecount="100" columns="10">
   <image source="../sprite@2x.png" width="320" height="320"/>
  </tileset>
  <layer name="background" width="31" height="10">
+  <properties>
+   <property name="nextLevel" value="level1"/>
+  </properties>
   <data encoding="csv">
 100,8,9,10,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,
 71,72,72,72,73,100,100,71,72,72,72,72,72,72,72,72,72,73,100,100,100,100,100,100,100,100,100,100,100,100,100,
@@ -53,7 +56,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,65,0,0,0,0,0,0,0,0,0,0,0,0,0,0,70,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,66,0,95,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,94,66,0,95,0,
 0,0,0,0,0,0,41,0,0,0,0,0,0,0,0,0,0,0,0,0,51,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
