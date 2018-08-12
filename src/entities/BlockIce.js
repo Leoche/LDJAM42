@@ -4,7 +4,7 @@ export class BlockIce extends Block {
     constructor (scene, mapX, mapY)
     {
         super(scene, mapX, mapY)
-        this.setFrame(62)
+        this.setFrame(50)
         this.color = "blue"
         this.name = "blockice"
     }

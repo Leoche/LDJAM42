@@ -7,10 +7,12 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.setTexture('player')
         this.setOrigin(0,0)
         this.setPosition(mapX * 32, mapY * 32)
-        this.frameBase = 0;
+        this.frameBase = 20;
         this.catching = 0;
         this.catched = null;
         this.depth = 1000;
+        this.isWinning = false;
+        this.willWinning = false;
         this.map = {
           x: mapX,
           y: mapY
@@ -28,26 +30,30 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.moving = false
     }
     move(direction, canMove){
-      if (this.moving) return;
+      if (this.moving || this.isWinning) return;
       if (this.catching === 0) this.frameBase = this.directionToFrame[direction]
       if (!canMove) return;
       this.moving = true;
       if (direction === "left") {
         this.nextPosition.x -= 32;
         this.map.x--
+        if (!this.catching) this.anims.play('left');
       } else if (direction === "right") {
         this.nextPosition.x += 32;
         this.map.x++
+        if (!this.catching) this.anims.play('right');
       } else if (direction === "down") {
         this.nextPosition.y += 32;
         this.map.y++
+        if (!this.catching) this.anims.play('down');
       } else if (direction === "up") {
         this.nextPosition.y -= 32;
         this.map.y--
+        if (!this.catching) this.anims.play('up');
       }
     }
     catch(block) {
-      this.catching = 1
+      this.catching = 6
       this.catched = block;
     }
     release() {
@@ -61,7 +67,12 @@ export class Player extends Phaser.GameObjects.Sprite {
       if (this.frameBase >= 0) return 'right';
     }
     update() {
-      this.setFrame(this.frameBase + this.catching)
+      if (this.isWinning) {
+        return;
+      }
+      if (!this.moving) {
+        this.setFrame(this.frameBase + this.catching)
+      }
       if (this.nextPosition.x !== this.x) {
         if (this.nextPosition.x > this.x) this.x += 2;
         else this.x -= 2;
@@ -70,6 +81,8 @@ export class Player extends Phaser.GameObjects.Sprite {
         else this.y -= 2;
       } else {
         this.moving = false;
+        if (this.willWinning) this.isWinning = true;
+        this.anims.play('win')
       }
     }
 }

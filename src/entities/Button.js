@@ -8,8 +8,8 @@ export class Button extends Phaser.GameObjects.Sprite {
         this.setTexture('player')
         this.setOrigin(0,0)
         let colors = {
-          blue:77,
-          brown:66
+          blue:69,
+          brown:64
         }
         this.frameBase = colors[color]
         this.setFrame(this.frameBase)

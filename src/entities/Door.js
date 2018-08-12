@@ -8,8 +8,8 @@ export class Door extends Phaser.GameObjects.Sprite {
         this.setTexture('player')
         this.setOrigin(0,0)
         this.colors = {
-          blue:86,
-          brown:56
+          blue:65,
+          brown:60
         }
         this.frameBase = this.colors[color]
         this.setFrame(this.frameBase)

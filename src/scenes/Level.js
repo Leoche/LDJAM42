@@ -10,7 +10,7 @@ export class Level extends Phaser.Scene {
   }
   preload() {
     this.load.image('cokecan', 'assets/cokecan.png')
-    this.load.tilemapTiledJSON('map', 'assets/map.json')
+    this.load.tilemapTiledJSON('map', 'assets/tutorial.json')
     this.load.image('tiles', 'assets/sprite@2x.png')
     this.load.spritesheet('player', 'assets/sprite@2x.png', { frameWidth: 32, frameHeight: 32})
 
@@ -21,11 +21,44 @@ export class Level extends Phaser.Scene {
     this.map = this.make.tilemap({ key: 'map' })
     var tiles = this.map.addTilesetImage('sprite@2x', 'tiles')
     var layerBackground = this.map.createStaticLayer(0, tiles, 0, 0)
+    var layerRoof = this.map.createStaticLayer(4, tiles, 0, 0)
+    layerRoof.depth = 99999;
     // var layerBlocks = this.map.createStaticLayer(3, tiles, 0, 0)
     this.blocks = []
     this.doors = []
     this.buttons = []
+    this.winTime = 0;
     this.exit = null
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+        frameRate: 15,
+        repeat: 1
+    });
+    this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('player', { start: 10, end: 13 }),
+        frameRate: 15,
+        repeat: 1
+    });
+    this.anims.create({
+        key: 'down',
+        frames: this.anims.generateFrameNumbers('player', { start: 20, end: 23 }),
+        frameRate: 15,
+        repeat: 1
+    });
+    this.anims.create({
+        key: 'up',
+        frames: this.anims.generateFrameNumbers('player', { start: 30, end: 33 }),
+        frameRate: 15,
+        repeat: 1
+    });
+    this.anims.create({
+        key: 'win',
+        frames: this.anims.generateFrameNumbers('player', { start: 37, end: 39 }),
+        frameRate: 10,
+        repeat: 3
+    });
     this.initPlayer()
     this.initBlocks()
     this.initControls()
@@ -43,9 +76,8 @@ export class Level extends Phaser.Scene {
       }
     }
     this.cameras.main.startFollow(this.player)
-    this.cameras.main.setZoom(1.5)
-    // this.cameras.main.setZoom(500)
-    // this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
+    this.cameras.main.setZoom(500)
+    this.cameras.main.zoomTo(1.5, 1000, 'Quint.easeOut')
   }
   initBlocks() {
     var playerLayer = this.map.layers.filter(layer => layer.name === "blocks")[0].data
@@ -53,19 +85,21 @@ export class Level extends Phaser.Scene {
       for (var j = 0; j < playerLayer[i].length; j++) {
         if (playerLayer[i][j].index !== -1) {
 
-          if (playerLayer[i][j].index === 95) {
-            this.exit = this.add.existing(new Exit(this, j, i))
+          if (playerLayer[i][j].index === 94) {
+            this.exit = this.add.existing(new Exit(this, j, i, true))
+          } else if (playerLayer[i][j].index === 95) {
+            this.exit = this.add.existing(new Exit(this, j, i, false))
           } else if (playerLayer[i][j].index === 41) {
             this.blocks.push(this.add.existing(new Block(this, j, i)))
-          } else if (playerLayer[i][j].index === 63) {
+          } else if (playerLayer[i][j].index === 51) {
             this.blocks.push(this.add.existing(new BlockIce(this, j, i)))
-          } else if (playerLayer[i][j].index === 57) {
+          } else if (playerLayer[i][j].index === 61) {
             this.doors.push(this.add.existing(new Door(this, j, i, 'brown')))
-          } else if (playerLayer[i][j].index === 87) {
+          } else if (playerLayer[i][j].index === 66) {
             this.doors.push(this.add.existing(new Door(this, j, i, 'blue')))
-          } else if (playerLayer[i][j].index === 67) {
+          } else if (playerLayer[i][j].index === 65) {
             this.buttons.push(this.add.existing(new Button(this, j, i, 'brown')))
-          } else if (playerLayer[i][j].index === 78) {
+          } else if (playerLayer[i][j].index === 70) {
             this.buttons.push(this.add.existing(new Button(this, j, i, 'blue')))
           }
 
@@ -238,5 +272,16 @@ export class Level extends Phaser.Scene {
       door.setOpen(open)
     })
     this.doors.forEach(door => door.update())
+    if (this.checkCollision(this.player, this.exit)) {
+      this.player.willWinning = true;
+      this.cameras.main.zoomTo(5, 2000, 'Quint.easeOut')
+    }
+    if (this.player.isWinning) {
+      if (this.winTime === 100) {
+        this.winTime++
+        console.log('test');
+        this.cameras.main.fadeOut(2000, 0)
+      } else this.winTime++;
+    }
   }
 }

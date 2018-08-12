@@ -1,12 +1,13 @@
 export class Exit extends Phaser.GameObjects.Sprite {
 
-    constructor (scene, mapX, mapY)
+    constructor (scene, mapX, mapY, flipped)
     {
         super(scene, mapX * 32, mapY * 32)
         this.name = "exit"
         this.setTexture('player')
         this.setOrigin(0,0)
         this.setFrame(94)
+        this.setFlip(flipped)
         this.setPosition(mapX * 32, mapY * 32)
         this.map = {
           x: mapX,
