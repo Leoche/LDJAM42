@@ -9,10 +9,14 @@ const gameConfig = {
   input: {
       gamepad: true
   },
-  pixelArt: true
+  pixelArt: true,
+  audio: {
+      disableWebAudio: true
+  }
 };
 
 var game = new Phaser.Game(gameConfig);
 game.scene.add('menu', Menu);
 game.scene.add('level', Level);
-game.scene.start('menu')
+// game.scene.start('menu')
+game.scene.start("menu", {level: "menu"});

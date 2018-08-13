@@ -38,18 +38,22 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.nextPosition.x -= 32;
         this.map.x--
         if (!this.catching) this.anims.play('left');
+        else this.setFrame(this.frameBase + this.catching)
       } else if (direction === "right") {
         this.nextPosition.x += 32;
         this.map.x++
         if (!this.catching) this.anims.play('right');
+        else this.setFrame(this.frameBase + this.catching)
       } else if (direction === "down") {
         this.nextPosition.y += 32;
         this.map.y++
         if (!this.catching) this.anims.play('down');
+        else this.setFrame(this.frameBase + this.catching)
       } else if (direction === "up") {
         this.nextPosition.y -= 32;
         this.map.y--
         if (!this.catching) this.anims.play('up');
+        else this.setFrame(this.frameBase + this.catching)
       }
     }
     catch(block) {

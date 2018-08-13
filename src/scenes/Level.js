@@ -13,9 +13,17 @@ export class Level extends Phaser.Scene {
   }
   preload() {
     this.load.image('cokecan', 'assets/cokecan.png')
-    this.load.tilemapTiledJSON(this.level, 'assets/' + this.level + '.json')
+    this.load.tilemapTiledJSON(this.level, 'assets/levels/' + this.level + '.json')
     this.load.image('tiles', 'assets/sprite@2x.png')
     this.load.spritesheet('player', 'assets/sprite@2x.png', { frameWidth: 32, frameHeight: 32})
+    this.load.audio('door', ['assets/sounds/door.ogg']);
+    this.load.audio('door2', ['assets/sounds/door2.ogg']);
+    this.load.audio('victory', ['assets/sounds/victory.ogg']);
+    this.load.audio('footstep00', ['assets/sounds/footstep00.ogg']);
+    this.load.audio('footstep01', ['assets/sounds/footstep01.ogg']);
+    this.load.audio('footstep02', ['assets/sounds/footstep02.ogg']);
+    this.load.audio('whoosh00', ['assets/sounds/whoosh.mp3']);
+    this.load.audio('whoosh01', ['assets/sounds/whoosh2.mp3']);
   }
 
   create() {
@@ -70,6 +78,16 @@ export class Level extends Phaser.Scene {
         frameRate: 10,
         repeat: 3
     });
+    this.sounds = {// + Math.floor(Math.random()*3)
+      "footstep00": this.sound.add('footstep00'),
+      "footstep01": this.sound.add('footstep01'),
+      "footstep02": this.sound.add('footstep02'),
+      "victory": this.sound.add('victory'),
+      "door": this.sound.add('door'),
+      "door2": this.sound.add('door2'),
+      "whoosh00": this.sound.add('whoosh00'),
+      "whoosh01": this.sound.add('whoosh01'),
+    }
     this.initPlayer()
     this.initBlocks()
     this.initControls()
@@ -245,11 +263,18 @@ export class Level extends Phaser.Scene {
                 && this.canMoveBlocks(this.player.catched, direction)
                 && (this.player.getDirection() === direction || this.player.getDirection() === this.getOppositeDirection(direction))
               ) {
+              if (!this.player.moving){
+                this.sounds['footstep0' + Math.floor(Math.random()*3)].play('',{volume: 0.2})
+                this.sounds['whoosh0' + Math.floor(Math.random()*2)].play('',{volume: 0.2})
+              }
               this.player.catched.move(direction, true)
               this.player.move(direction, true)
             }
         }
       } else {
+        if (!this.player.moving && this.canMove(this.player, direction)) {
+          let sound = this.sounds['footstep0' + Math.floor(Math.random()*3)].play({volume: 0.2})
+        }
         this.player.move(direction, this.canMove(this.player, direction))
       }
     }
@@ -262,6 +287,7 @@ export class Level extends Phaser.Scene {
       block.update();
       if (block.sliding !== null && this.canMoveCollider(block, block.sliding) && this.canMoveBlocks(block, block.sliding)) {
         block.move(block.sliding, true)
+        this.sounds['whoosh0' + Math.floor(Math.random()*2)].play({volume: 0.2})
       } else {
         block.sliding = null;
         block.catchable = true;
@@ -289,11 +315,16 @@ export class Level extends Phaser.Scene {
           }
         }
       })
+      if(door.open !== open) {
+        if(open) this.sounds['door'].play({volume: 0.2})
+        else this.sounds['door2'].play({volume: 0.2})
+      }
       door.setOpen(open)
     })
     this.doors.forEach(door => door.update())
     if (this.checkCollision(this.player, this.exit) && !this.player.willWinning) {
       this.player.willWinning = true;
+      this.sounds['victory'].play({repeat: 3})
       this.cameras.main.zoomTo(5, 2000, 'Quint.easeOut')
     }
     if (this.player.isWinning) {
@@ -301,7 +332,8 @@ export class Level extends Phaser.Scene {
         this.winTime++
         this.cameras.main.fadeOut(2000, 0, 0, 0, (camera, progress) => {
           if (progress === 1) {
-            this.scene.start("level", {level: this.nextLevel})
+            if(this.nextLevel === "final") this.scene.start("menu")
+            else this.scene.start("level", {level: this.nextLevel})
           }
         })
       } else this.winTime++;
